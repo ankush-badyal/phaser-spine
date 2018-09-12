@@ -1,8 +1,15 @@
+///<reference path="definition.d.ts" />
+///<reference path="WebGL/Texture.ts" />
+///<reference path="Canvas/Texture.ts" />
+///<reference path="Canvas/IRenderSession.ts" />
+///<reference path="WebGL/Renderer.ts" />
+///<reference path="WebGL/IRenderSession.ts" />
+///<reference path="Canvas/Renderer.ts" />
 declare module "phaser-spine" {
     export = PhaserSpine;
 }
 
-(<any>Phaser.Rope).prototype.postUpdate = function () {};
+(<any>Phaser.Rope).prototype.postUpdate = function () { };
 
 module PhaserSpine {
     export class Spine extends Phaser.Sprite {
@@ -48,7 +55,7 @@ module PhaserSpine {
             this.skeleton.updateWorldTransform();
             var offset = new spine.Vector2();
             var size = new spine.Vector2();
-            this.skeleton.getBounds(offset, size ,[]);
+            this.skeleton.getBounds(offset, size, []);
             this.specialBounds = new PIXI.Rectangle(offset.x, offset.y, size.x, size.y);
 
             // Create an AnimationState.
@@ -66,10 +73,10 @@ module PhaserSpine {
                 interrupt: this.onInterrupt.dispatch.bind(this.onInterrupt),
                 dispose: this.onDispose.dispatch.bind(this.onDispose),
                 /** Invoked when the current animation triggers an event. */
-                event : this.onEvent.dispatch.bind(this.onEvent),
+                event: this.onEvent.dispatch.bind(this.onEvent),
                 /** Invoked when the current animation has completed.
                  * @param loopCount The number of times the animation reached the end. */
-                complete : this.onComplete.dispatch.bind(this.onComplete),
+                complete: this.onComplete.dispatch.bind(this.onComplete),
                 /** Invoked just after the current animation is set. */
                 start: this.onStart.dispatch.bind(this.onStart),
                 /** Invoked just before the current animation is replaced. */
@@ -169,7 +176,7 @@ module PhaserSpine {
                 return;
             }
 
-            (<Canvas.Renderer>this.renderer).resize(this.getBounds(), this.scale, renderSession);
+            (<Canvas.Renderer>this.renderer).resize(this, new Phaser.Point(this.worldTransform.a, this.worldTransform.d), renderSession);
             if (SpinePlugin.TRIANGLE) {
                 (<Canvas.Renderer>this.renderer).drawTriangles(this, renderSession);
             } else {
@@ -182,7 +189,7 @@ module PhaserSpine {
                 return;
             }
 
-            (<WebGL.Renderer>this.renderer).resize(this, <WebGL.IPIXIRectangle>this.getBounds(), this.scale, renderSession);
+            (<WebGL.Renderer>this.renderer).resize(this, new Phaser.Point(this.worldTransform.a, this.worldTransform.d));
             (<WebGL.Renderer>this.renderer).draw(this, renderSession, this.premultipliedAlpha);
         }
 

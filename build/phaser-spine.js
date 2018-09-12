@@ -3,7 +3,7 @@
  * Spine plugin for Phaser.io!
  *
  * OrangeGames
- * Build at 22-11-2017
+ * Build at 06-08-2018
  * Released under MIT License 
  */
 
@@ -8974,15 +8974,14 @@ var PhaserSpine;
                 this.vertices = null;
                 this.tempColor = null;
             };
-            Renderer.prototype.resize = function (bounds, scale, renderSession) {
+            Renderer.prototype.resize = function (phaserSpine, scale, renderSession) {
                 var res = renderSession.resolution;
+                var rootBone = phaserSpine.skeleton.getRootBone();
                 renderSession.context.resetTransform();
-                renderSession.context.scale(scale.x * res, scale.y * res);
-                renderSession.context.translate(bounds.width / 2 / scale.x, bounds.height / scale.y / res);
-                if (res > 1) {
-                    renderSession.context.translate(0, bounds.height / scale.y / res / 2);
-                }
-                renderSession.context.translate(bounds.x / scale.x, bounds.y / scale.y);
+                renderSession.context.scale(scale.x * res * res, scale.y * res * res);
+                var xPos = phaserSpine.worldPosition.x - (rootBone.x * scale.x);
+                var yPos = phaserSpine.worldPosition.y + (rootBone.y * scale.y);
+                renderSession.context.translate(xPos / res / scale.x, yPos / res / scale.y);
             };
             Renderer.prototype.drawImages = function (phaserSpine, renderSession) {
                 var ctx = renderSession.context;
@@ -9016,12 +9015,12 @@ var PhaserSpine;
                     var w = region.width;
                     var h = region.height;
                     ctx.save();
-                    ctx.transform(bone.a, bone.c, bone.b, bone.d, bone.worldX, bone.worldY);
-                    ctx.translate(attachment.offset[0], attachment.offset[1]);
+                    ctx.transform(bone.a, bone.c, bone.b, bone.d, bone.worldX / res, bone.worldY / res);
+                    ctx.translate(attachment.offset[0] / res, attachment.offset[1] / res);
                     ctx.rotate(attachment.rotation * Math.PI / 180);
                     var atlasScale = att.width / w;
                     ctx.scale(atlasScale * attachment.scaleX, atlasScale * attachment.scaleY);
-                    ctx.translate(w / 2, h / 2);
+                    ctx.translate(w / 2 / res, h / 2 / res);
                     if (attachment.region.rotate) {
                         var t = w;
                         w = h;
@@ -9208,84 +9207,6 @@ var PhaserSpine;
         Canvas.Texture = Texture;
     })(Canvas = PhaserSpine.Canvas || (PhaserSpine.Canvas = {}));
 })(PhaserSpine || (PhaserSpine = {}));
-var PhaserSpine;
-(function (PhaserSpine) {
-    var SpinePlugin = (function (_super) {
-        __extends(SpinePlugin, _super);
-        function SpinePlugin(game, parent) {
-            return _super.call(this, game, parent) || this;
-        }
-        SpinePlugin.prototype.init = function (config) {
-            if (config === void 0) { config = {}; }
-            SpinePlugin.DEBUG = config.debugRendering || false;
-            SpinePlugin.TRIANGLE = config.triangleRendering || false;
-            this.addSpineCache();
-            this.addSpineFactory();
-            this.addSpineLoader();
-        };
-        SpinePlugin.prototype.addSpineLoader = function () {
-            Phaser.Loader.prototype.spine = function (key, url, scalingVariants) {
-                var _this = this;
-                var path = url.substr(0, url.lastIndexOf('.'));
-                var pathonly = url.substr(0, url.lastIndexOf('/'));
-                var filenameonly = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
-                this.text('atlas_' + SpinePlugin.SPINE_NAMESPACE + '_' + key, path + '.atlas');
-                this.json(SpinePlugin.SPINE_NAMESPACE + key, path + '.json');
-                this.onFileComplete.add(function (progress, name) {
-                    if (name.indexOf('atlas_spine_') === 0) {
-                        var atlas = _this.game.cache.getText(name);
-                        var firstImageName = null;
-                        atlas.split(/\r\n|\r|\n/).forEach(function (line, idx) {
-                            if (line.length === 0 || line.indexOf(':') !== -1) {
-                                return;
-                            }
-                            if (firstImageName === null) {
-                                firstImageName = line.substr(0, line.lastIndexOf('.'));
-                            }
-                            if (firstImageName !== null && line.indexOf(firstImageName) !== -1 && line.indexOf('.') !== -1) {
-                                if (filenameonly === name.replace('atlas_spine_', '') || key === name.replace('atlas_spine_', '')) {
-                                    this.image(line, pathonly + '/' + line);
-                                }
-                            }
-                        }.bind(_this));
-                    }
-                });
-            };
-        };
-        SpinePlugin.prototype.addSpineFactory = function () {
-            Phaser.GameObjectFactory.prototype.spine = function (x, y, key, premultipliedAlpha, scalingVariant, group) {
-                if (premultipliedAlpha === void 0) { premultipliedAlpha = false; }
-                if (group === undefined) {
-                    group = this.world;
-                }
-                var spineObject = new PhaserSpine.Spine(this.game, x, y, key, premultipliedAlpha);
-                return group.add(spineObject);
-            };
-            Phaser.GameObjectCreator.prototype.spine = function (x, y, key, premultipliedAlpha, scalingVariant, group) {
-                if (premultipliedAlpha === void 0) { premultipliedAlpha = false; }
-                return new PhaserSpine.Spine(this.game, x, y, key, premultipliedAlpha);
-            };
-        };
-        SpinePlugin.prototype.addSpineCache = function () {
-            Phaser.Cache.prototype.spine = {};
-            Phaser.Cache.prototype.addSpine = function (key, data) {
-                this.spine[key] = data;
-            };
-            Phaser.Cache.prototype.getSpine = function (key) {
-                if (!this.spine.hasOwnProperty(key)) {
-                    console.warn('Phaser.Cache.getSpine: Key "' + key + '" not found in Cache.');
-                }
-                return this.spine[key];
-            };
-        };
-        SpinePlugin.RESOLUTION_REGEXP = /@(.+)x/;
-        SpinePlugin.SPINE_NAMESPACE = 'spine';
-        SpinePlugin.DEBUG = false;
-        SpinePlugin.TRIANGLE = false;
-        return SpinePlugin;
-    }(Phaser.Plugin));
-    PhaserSpine.SpinePlugin = SpinePlugin;
-})(PhaserSpine || (PhaserSpine = {}));
 Phaser.Rope.prototype.postUpdate = function () { };
 var PhaserSpine;
 (function (PhaserSpine) {
@@ -9389,7 +9310,7 @@ var PhaserSpine;
             if (!this.visible || !this.alive) {
                 return;
             }
-            this.renderer.resize(this.getBounds(), this.scale, renderSession);
+            this.renderer.resize(this, new Phaser.Point(this.worldTransform.a, this.worldTransform.d), renderSession);
             if (PhaserSpine.SpinePlugin.TRIANGLE) {
                 this.renderer.drawTriangles(this, renderSession);
             }
@@ -9401,7 +9322,7 @@ var PhaserSpine;
             if (!this.visible || !this.alive) {
                 return;
             }
-            this.renderer.resize(this, this.getBounds(), this.scale, renderSession);
+            this.renderer.resize(this, new Phaser.Point(this.worldTransform.a, this.worldTransform.d));
             this.renderer.draw(this, renderSession, this.premultipliedAlpha);
         };
         Spine.prototype.setMixByName = function (fromName, toName, duration) {
@@ -9478,6 +9399,98 @@ var PhaserSpine;
 })(PhaserSpine || (PhaserSpine = {}));
 var PhaserSpine;
 (function (PhaserSpine) {
+    var SpinePlugin = (function (_super) {
+        __extends(SpinePlugin, _super);
+        function SpinePlugin(game, parent) {
+            return _super.call(this, game, parent) || this;
+        }
+        SpinePlugin.prototype.init = function (config) {
+            if (config === void 0) { config = {}; }
+            SpinePlugin.DEBUG = config.debugRendering || false;
+            SpinePlugin.TRIANGLE = config.triangleRendering || false;
+            this.addSpineCache();
+            this.addSpineFactory();
+            this.addSpineLoader();
+        };
+        SpinePlugin.prototype.addSpineLoader = function () {
+            Phaser.Loader.prototype.spine = function (key, url, scalingVariants) {
+                var _this = this;
+                var path = url.substr(0, url.lastIndexOf('.'));
+                var pathonly = url.substr(0, url.lastIndexOf('/'));
+                var filenameonly = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+                this.text('atlas_' + SpinePlugin.SPINE_NAMESPACE + '_' + key, path + '.atlas');
+                this.json(SpinePlugin.SPINE_NAMESPACE + key, path + '.json');
+                var imageKeys = [];
+                var imagesLoaded = 0;
+                this.onFileComplete.add(function (progress, name) {
+                    if (name.indexOf('atlas_spine_') === 0) {
+                        var atlas = _this.game.cache.getText(name);
+                        var firstImageName = null;
+                        atlas.split(/\r\n|\r|\n/).forEach(function (line, idx) {
+                            if (line.length === 0 || line.indexOf(':') !== -1) {
+                                return;
+                            }
+                            if (firstImageName === null) {
+                                firstImageName = line.substr(0, line.lastIndexOf('.'));
+                            }
+                            if (firstImageName !== null && line.indexOf(firstImageName) !== -1 && line.indexOf('.') !== -1) {
+                                if (filenameonly === name.replace('atlas_spine_', '') || key === name.replace('atlas_spine_', '')) {
+                                    imageKeys.push(line);
+                                    _this.image(line, pathonly + '/' + line);
+                                }
+                            }
+                        });
+                    }
+                    else if (imageKeys.indexOf(name) !== -1) {
+                        imagesLoaded++;
+                    }
+                    if (imageKeys.length && imagesLoaded === imageKeys.length) {
+                        imagesLoaded = 0;
+                        _this.game.cache.addSpine(key, {
+                            atlas: 'atlas_' + SpinePlugin.SPINE_NAMESPACE + '_' + key,
+                            json: SpinePlugin.SPINE_NAMESPACE + key,
+                            images: imageKeys
+                        });
+                    }
+                });
+            };
+        };
+        SpinePlugin.prototype.addSpineFactory = function () {
+            Phaser.GameObjectFactory.prototype.spine = function (x, y, key, premultipliedAlpha, scalingVariant, group) {
+                if (premultipliedAlpha === void 0) { premultipliedAlpha = false; }
+                if (group === undefined) {
+                    group = this.world;
+                }
+                var spineObject = new PhaserSpine.Spine(this.game, x, y, key, premultipliedAlpha);
+                return group.add(spineObject);
+            };
+            Phaser.GameObjectCreator.prototype.spine = function (x, y, key, premultipliedAlpha, scalingVariant, group) {
+                if (premultipliedAlpha === void 0) { premultipliedAlpha = false; }
+                return new PhaserSpine.Spine(this.game, x, y, key, premultipliedAlpha);
+            };
+        };
+        SpinePlugin.prototype.addSpineCache = function () {
+            Phaser.Cache.prototype.spine = {};
+            Phaser.Cache.prototype.addSpine = function (key, data) {
+                this.spine[key] = data;
+            };
+            Phaser.Cache.prototype.getSpine = function (key) {
+                if (!this.spine.hasOwnProperty(key)) {
+                    console.warn('Phaser.Cache.getSpine: Key "' + key + '" not found in Cache.');
+                }
+                return this.spine[key];
+            };
+        };
+        SpinePlugin.RESOLUTION_REGEXP = /@(.+)x/;
+        SpinePlugin.SPINE_NAMESPACE = 'spine';
+        SpinePlugin.DEBUG = false;
+        SpinePlugin.TRIANGLE = false;
+        return SpinePlugin;
+    }(Phaser.Plugin));
+    PhaserSpine.SpinePlugin = SpinePlugin;
+})(PhaserSpine || (PhaserSpine = {}));
+var PhaserSpine;
+(function (PhaserSpine) {
     var WebGL;
     (function (WebGL) {
         var Renderer = (function () {
@@ -9511,21 +9524,19 @@ var PhaserSpine;
                 this.skeletonRenderer = null;
                 this.debugRenderer = null;
             };
-            Renderer.prototype.resize = function (phaserSpine, spriteBounds, scale2, renderSession) {
+            Renderer.prototype.resize = function (phaserSpine, scale2) {
                 var w = this.game.width;
                 var h = this.game.height;
-                var res = renderSession.resolution;
                 phaserSpine.skeleton.flipX = scale2.x < 0;
                 phaserSpine.skeleton.flipY = scale2.y < 0;
-                var scale = Math.max(scale2.x, scale2.y);
-                var width = w / scale;
-                var height = h / scale;
-                var centerX = -spriteBounds.centerX;
-                var centerY = (-h + spriteBounds.centerY) * res + spriteBounds.height / 2;
-                var x = centerX / scale;
-                var y = centerY / scale;
-                this.mvp.ortho2d(x * res, y, width * res, height * res);
-                renderSession.gl.viewport(0, 0, w * res, h * res);
+                var width = w / scale2.x;
+                var height = h / scale2.y;
+                var rootBone = phaserSpine.skeleton.getRootBone();
+                var originX = -phaserSpine.worldPosition.x + (rootBone.x * scale2.x);
+                var originY = phaserSpine.worldPosition.y + (rootBone.y * scale2.y);
+                var x = originX / scale2.x;
+                var y = (height - (originY / scale2.y)) * -1;
+                this.mvp.ortho2d(x, y, width, height);
             };
             Renderer.prototype.draw = function (phaserSpine, renderSession, premultipliedAlpha) {
                 renderSession.spriteBatch.end();

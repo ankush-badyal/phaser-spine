@@ -1,3 +1,4 @@
+///<reference path="Spine.ts" />
 module PhaserSpine {
     export interface SpineObjectFactory extends Phaser.GameObjectFactory {
         spine: (x: number, y: number, key: string, premultipliedAlpha?: boolean, scalingVariant?: string, group?: Phaser.Group) => any;
@@ -68,12 +69,13 @@ module PhaserSpine {
                 (<PhaserSpine.SpineLoader>this).text('atlas_' + SpinePlugin.SPINE_NAMESPACE + '_' + key, path + '.atlas');
                 (<PhaserSpine.SpineLoader>this).json(SpinePlugin.SPINE_NAMESPACE + key, path + '.json');
                 // (<PhaserSpine.SpineLoader>this).image(SpinePlugin.SPINE_NAMESPACE + key, path +'.png');
-
+                let imageKeys: string[] = [];
+                let imagesLoaded: number = 0;
                 this.onFileComplete.add((progress: number, name: string) => {
                     if (name.indexOf('atlas_spine_') === 0) {
                         let atlas: any = this.game.cache.getText(name);
                         var firstImageName: string = null;
-                        atlas.split(/\r\n|\r|\n/).forEach(function (line: string, idx: number) {
+                        atlas.split(/\r\n|\r|\n/).forEach((line: string, idx: number) => {
                             if (line.length === 0 || line.indexOf(':') !== -1) {
                                 return;
                             }
@@ -86,10 +88,21 @@ module PhaserSpine {
                                 //Only load up atlas images if filename or keyname matches text atlas key [atlas_spine_keyname] are of the same spine project
                                 //Assumes each spine project is in its own separate directory. Filename or keyname must match text atlas key!
                                 if (filenameonly === name.replace('atlas_spine_', '') || key === name.replace('atlas_spine_', '')) {
+                                    imageKeys.push(line);
                                     this.image(line, pathonly + '/' + line);
                                 }
                             }
-                        }.bind(this));
+                        })
+                    } else if (imageKeys.indexOf(name) !== -1) {
+                        imagesLoaded++;
+                    }
+                    if (imageKeys.length && imagesLoaded === imageKeys.length) {
+                        imagesLoaded = 0;
+                        this.game.cache.addSpine(key, {
+                            atlas: 'atlas_' + SpinePlugin.SPINE_NAMESPACE + '_' + key,
+                            json: SpinePlugin.SPINE_NAMESPACE + key,
+                            images: imageKeys
+                        });
                     }
                 })
             };

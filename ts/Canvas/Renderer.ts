@@ -21,19 +21,15 @@ module PhaserSpine {
                 this.tempColor = null;
             }
 
-            public resize(bounds: PIXI.Rectangle, scale: Phaser.Point, renderSession: IRenderSession): void {
-                let res = renderSession.resolution;
-
+            // Commented lines were the original - removed to work with the scaling used in our games with other components
+            public resize(phaserSpine: PhaserSpine.Spine, scale: Phaser.Point, renderSession: IRenderSession): void {
+                var res = renderSession.resolution;
+                var rootBone = phaserSpine.skeleton.getRootBone();
                 (<any>renderSession.context).resetTransform();
-                //Scale the animation
-                renderSession.context.scale(scale.x * res, scale.y * res);
-                //Offset to model's center
-                renderSession.context.translate(bounds.width / 2 / scale.x, bounds.height/ scale.y / res);
-                if(res > 1){
-                    renderSession.context.translate(0, bounds.height / scale.y / res / 2);
-                }
-                //Offset to center of screen
-                renderSession.context.translate(bounds.x / scale.x, bounds.y / scale.y);
+                renderSession.context.scale(scale.x * res * res, scale.y * res * res);
+				var xPos = phaserSpine.worldPosition.x - (rootBone.x * scale.x);
+				var yPos = phaserSpine.worldPosition.y + (rootBone.y * scale.y);
+                renderSession.context.translate(xPos / res / scale.x, yPos / res / scale.y);
             }
 
             public drawImages (phaserSpine: Spine, renderSession: IRenderSession) {
@@ -74,12 +70,12 @@ module PhaserSpine {
                     let w = region.width;
                     let h = region.height;
                     ctx.save();
-                    ctx.transform(bone.a, bone.c, bone.b, bone.d, bone.worldX, bone.worldY);
-                    ctx.translate(attachment.offset[0], attachment.offset[1]);
+                    ctx.transform(bone.a, bone.c, bone.b, bone.d, bone.worldX / res, bone.worldY / res);
+                    ctx.translate(attachment.offset[0] / res, attachment.offset[1] / res);
                     ctx.rotate(attachment.rotation * Math.PI / 180);
                     let atlasScale = att.width / w;
                     ctx.scale(atlasScale * attachment.scaleX, atlasScale * attachment.scaleY);
-                    ctx.translate(w / 2, h / 2);
+                    ctx.translate(w / 2 / res, h / 2 / res);
                     if (attachment.region.rotate) {
                         let t = w;
                         w = h;

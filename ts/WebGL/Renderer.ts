@@ -17,7 +17,7 @@ module PhaserSpine {
 
             private shapes: spine.webgl.ShapeRenderer;
 
-            constructor (game: Phaser.Game) {
+            constructor(game: Phaser.Game) {
                 this.game = game;
 
                 let gl: WebGLRenderingContext = (<IRenderSession>this.game.renderer.renderSession).gl;
@@ -53,26 +53,20 @@ module PhaserSpine {
                 this.debugRenderer = null;
             }
 
-            public resize(phaserSpine: Spine, spriteBounds: IPIXIRectangle, scale2: Phaser.Point, renderSession: IRenderSession): void {
+            // Commented lines were the original - removed to work with the scaling used in our games with other components
+            public resize(phaserSpine: Spine, scale2: Phaser.Point): void {
                 var w = this.game.width;
                 var h = this.game.height;
-                var res = renderSession.resolution;
-
                 phaserSpine.skeleton.flipX = scale2.x < 0;
                 phaserSpine.skeleton.flipY = scale2.y < 0;
-
-                var scale = Math.max(scale2.x, scale2.y);
-
-                var width = w / scale;
-                var height = h / scale;
-                var centerX = - spriteBounds.centerX;
-                var centerY = (-h + spriteBounds.centerY) * res + spriteBounds.height / 2;
-
-                var x = centerX / scale;
-                var y = centerY / scale;
-
-                this.mvp.ortho2d(x * res, y, width * res, height * res);
-                renderSession.gl.viewport(0, 0, w * res, h * res);
+                var width = w / scale2.x;
+                var height = h / scale2.y;
+                var rootBone = phaserSpine.skeleton.getRootBone();
+                var originX = -phaserSpine.worldPosition.x + (rootBone.x * scale2.x);
+                var originY = phaserSpine.worldPosition.y + (rootBone.y * scale2.y);
+                var x = originX / scale2.x;
+				var y = (height - (originY / scale2.y)) * -1;
+                this.mvp.ortho2d(x, y, width, height);
             }
 
             public draw(phaserSpine: Spine, renderSession: IRenderSession, premultipliedAlpha?: boolean) {
@@ -85,15 +79,14 @@ module PhaserSpine {
                 var currentShader = renderSession.shaderManager.currentShader;
 
                 // Reset glVertexAttribArray
-                for (let i = 0; i < renderSession.shaderManager.attribState.length; i++)
-                {
+                for (let i = 0; i < renderSession.shaderManager.attribState.length; i++) {
                     renderSession.shaderManager.attribState[i] = null;
                     renderSession.gl.disableVertexAttribArray(i);
                 }
                 ////    ENDFIX: Save Context
-                
 
-                
+
+
                 // Bind the shader and set the texture and model-view-projection matrix.
                 this.shader.bind();
                 this.shader.setUniformi(spine.webgl.Shader.SAMPLER, 0);
@@ -132,15 +125,15 @@ module PhaserSpine {
                 renderSession.spriteBatch.dirty = true;
 
                 // Only for Phaser 2.7.3 - 2.7.7 (inclusive)
-                if(["2.7.3", "2.7.4", "2.7.5", "2.7.6", "2.7.7"].indexOf(Phaser.VERSION) > -1){
+                if (["2.7.3", "2.7.4", "2.7.5", "2.7.6", "2.7.7"].indexOf(Phaser.VERSION) > -1) {
                     renderSession.spriteBatch.sprites.map(sprite => {
-                        if(sprite.texture && sprite.texture.baseTexture){
+                        if (sprite.texture && sprite.texture.baseTexture) {
                             sprite.texture.baseTexture._dirty[renderSession.spriteBatch.gl.id] = true;
                         }
                     });
                 }
                 ////    ENDFIX: Restore Context
-                
+
 
                 // Let Phaser know we did draw
                 renderSession.drawCount++;

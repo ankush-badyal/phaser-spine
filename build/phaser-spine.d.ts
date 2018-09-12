@@ -1,3 +1,4 @@
+/// <reference path="../node_modules/phaser/typescript/phaser.d.ts" />
 declare module PhaserSpine {
     module Canvas {
         interface IRenderSession extends PIXI.RenderSession {
@@ -15,7 +16,7 @@ declare module PhaserSpine {
             private tempColor;
             constructor(game: Phaser.Game);
             destroy(): void;
-            resize(bounds: PIXI.Rectangle, scale: Phaser.Point, renderSession: IRenderSession): void;
+            resize(phaserSpine: PhaserSpine.Spine, scale: Phaser.Point, renderSession: IRenderSession): void;
             drawImages(phaserSpine: Spine, renderSession: IRenderSession): void;
             drawTriangles(phaserSpine: Spine, renderSession: IRenderSession): void;
             private drawTriangle(renderSession, img, x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2);
@@ -32,6 +33,39 @@ declare module PhaserSpine {
             setWraps(uWrap: spine.TextureWrap, vWrap: spine.TextureWrap): void;
             dispose(): void;
         }
+    }
+}
+declare module "phaser-spine" {
+    export = PhaserSpine;
+}
+declare module PhaserSpine {
+    class Spine extends Phaser.Sprite {
+        skeleton: spine.Skeleton;
+        private stateData;
+        private state;
+        private renderer;
+        private specialBounds;
+        private premultipliedAlpha;
+        onEvent: Phaser.Signal;
+        onStart: Phaser.Signal;
+        onInterrupt: Phaser.Signal;
+        onDispose: Phaser.Signal;
+        onComplete: Phaser.Signal;
+        onEnd: Phaser.Signal;
+        constructor(game: Phaser.Game, x: number, y: number, key: string, premultipliedAlpha?: boolean);
+        destroy(destroyChildren: boolean): void;
+        private createSkeleton(key);
+        update(): void;
+        _renderCanvas(renderSession: Canvas.IRenderSession, matrix?: PIXI.Matrix): void;
+        _renderWebGL(renderSession: WebGL.IRenderSession, matrix?: PIXI.Matrix): void;
+        setMixByName(fromName: string, toName: string, duration: number): void;
+        setAnimationByName(trackIndex: number, animationName: string, loop?: boolean): spine.TrackEntry;
+        addAnimationByName(trackIndex: number, animationName: string, loop?: boolean, delay?: number): spine.TrackEntry;
+        getCurrentAnimationForTrack(trackIndex: number): string;
+        setSkinByName(skinName: string): void;
+        setSkin(skin: spine.Skin): void;
+        setToSetupPose(): void;
+        createCombinedSkin(newSkinName: string, ...skinNames: string[]): spine.Skin;
     }
 }
 declare module PhaserSpine {
@@ -78,39 +112,6 @@ declare module PhaserSpine {
         private addSpineCache();
     }
 }
-declare module "phaser-spine" {
-    export = PhaserSpine;
-}
-declare module PhaserSpine {
-    class Spine extends Phaser.Sprite {
-        skeleton: spine.Skeleton;
-        private stateData;
-        private state;
-        private renderer;
-        private specialBounds;
-        private premultipliedAlpha;
-        onEvent: Phaser.Signal;
-        onStart: Phaser.Signal;
-        onInterrupt: Phaser.Signal;
-        onDispose: Phaser.Signal;
-        onComplete: Phaser.Signal;
-        onEnd: Phaser.Signal;
-        constructor(game: Phaser.Game, x: number, y: number, key: string, premultipliedAlpha?: boolean);
-        destroy(destroyChildren: boolean): void;
-        private createSkeleton(key);
-        update(): void;
-        _renderCanvas(renderSession: Canvas.IRenderSession, matrix?: PIXI.Matrix): void;
-        _renderWebGL(renderSession: WebGL.IRenderSession, matrix?: PIXI.Matrix): void;
-        setMixByName(fromName: string, toName: string, duration: number): void;
-        setAnimationByName(trackIndex: number, animationName: string, loop?: boolean): spine.TrackEntry;
-        addAnimationByName(trackIndex: number, animationName: string, loop?: boolean, delay?: number): spine.TrackEntry;
-        getCurrentAnimationForTrack(trackIndex: number): string;
-        setSkinByName(skinName: string): void;
-        setSkin(skin: spine.Skin): void;
-        setToSetupPose(): void;
-        createCombinedSkin(newSkinName: string, ...skinNames: string[]): spine.Skin;
-    }
-}
 declare module PhaserSpine {
     module WebGL {
         interface IRenderSession extends PIXI.RenderSession {
@@ -150,7 +151,7 @@ declare module PhaserSpine {
             private shapes;
             constructor(game: Phaser.Game);
             destroy(): void;
-            resize(phaserSpine: Spine, spriteBounds: IPIXIRectangle, scale2: Phaser.Point, renderSession: IRenderSession): void;
+            resize(phaserSpine: Spine, scale2: Phaser.Point): void;
             draw(phaserSpine: Spine, renderSession: IRenderSession, premultipliedAlpha?: boolean): void;
         }
     }
