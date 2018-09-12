@@ -162,12 +162,12 @@ var spine;
 			var y = curves[i - 1];
 			return y + (1 - y) * (percent - x) / (1 - x);
 		};
+		CurveTimeline.LINEAR = 0;
+		CurveTimeline.STEPPED = 1;
+		CurveTimeline.BEZIER = 2;
+		CurveTimeline.BEZIER_SIZE = 10 * 2 - 1;
 		return CurveTimeline;
 	}());
-	CurveTimeline.LINEAR = 0;
-	CurveTimeline.STEPPED = 1;
-	CurveTimeline.BEZIER = 2;
-	CurveTimeline.BEZIER_SIZE = 10 * 2 - 1;
 	spine.CurveTimeline = CurveTimeline;
 	var RotateTimeline = (function (_super) {
 		__extends(RotateTimeline, _super);
@@ -226,12 +226,12 @@ var spine;
 				bone.rotation += r * alpha;
 			}
 		};
+		RotateTimeline.ENTRIES = 2;
+		RotateTimeline.PREV_TIME = -2;
+		RotateTimeline.PREV_ROTATION = -1;
+		RotateTimeline.ROTATION = 1;
 		return RotateTimeline;
 	}(CurveTimeline));
-	RotateTimeline.ENTRIES = 2;
-	RotateTimeline.PREV_TIME = -2;
-	RotateTimeline.PREV_ROTATION = -1;
-	RotateTimeline.ROTATION = 1;
 	spine.RotateTimeline = RotateTimeline;
 	var TranslateTimeline = (function (_super) {
 		__extends(TranslateTimeline, _super);
@@ -287,14 +287,14 @@ var spine;
 				bone.y += (bone.data.y + y - bone.y) * alpha;
 			}
 		};
+		TranslateTimeline.ENTRIES = 3;
+		TranslateTimeline.PREV_TIME = -3;
+		TranslateTimeline.PREV_X = -2;
+		TranslateTimeline.PREV_Y = -1;
+		TranslateTimeline.X = 1;
+		TranslateTimeline.Y = 2;
 		return TranslateTimeline;
 	}(CurveTimeline));
-	TranslateTimeline.ENTRIES = 3;
-	TranslateTimeline.PREV_TIME = -3;
-	TranslateTimeline.PREV_X = -2;
-	TranslateTimeline.PREV_Y = -1;
-	TranslateTimeline.X = 1;
-	TranslateTimeline.Y = 2;
 	spine.TranslateTimeline = TranslateTimeline;
 	var ScaleTimeline = (function (_super) {
 		__extends(ScaleTimeline, _super);
@@ -473,18 +473,18 @@ var spine;
 				color.add((r - color.r) * alpha, (g - color.g) * alpha, (b - color.b) * alpha, (a - color.a) * alpha);
 			}
 		};
+		ColorTimeline.ENTRIES = 5;
+		ColorTimeline.PREV_TIME = -5;
+		ColorTimeline.PREV_R = -4;
+		ColorTimeline.PREV_G = -3;
+		ColorTimeline.PREV_B = -2;
+		ColorTimeline.PREV_A = -1;
+		ColorTimeline.R = 1;
+		ColorTimeline.G = 2;
+		ColorTimeline.B = 3;
+		ColorTimeline.A = 4;
 		return ColorTimeline;
 	}(CurveTimeline));
-	ColorTimeline.ENTRIES = 5;
-	ColorTimeline.PREV_TIME = -5;
-	ColorTimeline.PREV_R = -4;
-	ColorTimeline.PREV_G = -3;
-	ColorTimeline.PREV_B = -2;
-	ColorTimeline.PREV_A = -1;
-	ColorTimeline.R = 1;
-	ColorTimeline.G = 2;
-	ColorTimeline.B = 3;
-	ColorTimeline.A = 4;
 	spine.ColorTimeline = ColorTimeline;
 	var TwoColorTimeline = (function (_super) {
 		__extends(TwoColorTimeline, _super);
@@ -567,24 +567,24 @@ var spine;
 				dark.add((r2 - dark.r) * alpha, (g2 - dark.g) * alpha, (b2 - dark.b) * alpha, 0);
 			}
 		};
+		TwoColorTimeline.ENTRIES = 8;
+		TwoColorTimeline.PREV_TIME = -8;
+		TwoColorTimeline.PREV_R = -7;
+		TwoColorTimeline.PREV_G = -6;
+		TwoColorTimeline.PREV_B = -5;
+		TwoColorTimeline.PREV_A = -4;
+		TwoColorTimeline.PREV_R2 = -3;
+		TwoColorTimeline.PREV_G2 = -2;
+		TwoColorTimeline.PREV_B2 = -1;
+		TwoColorTimeline.R = 1;
+		TwoColorTimeline.G = 2;
+		TwoColorTimeline.B = 3;
+		TwoColorTimeline.A = 4;
+		TwoColorTimeline.R2 = 5;
+		TwoColorTimeline.G2 = 6;
+		TwoColorTimeline.B2 = 7;
 		return TwoColorTimeline;
 	}(CurveTimeline));
-	TwoColorTimeline.ENTRIES = 8;
-	TwoColorTimeline.PREV_TIME = -8;
-	TwoColorTimeline.PREV_R = -7;
-	TwoColorTimeline.PREV_G = -6;
-	TwoColorTimeline.PREV_B = -5;
-	TwoColorTimeline.PREV_A = -4;
-	TwoColorTimeline.PREV_R2 = -3;
-	TwoColorTimeline.PREV_G2 = -2;
-	TwoColorTimeline.PREV_B2 = -1;
-	TwoColorTimeline.R = 1;
-	TwoColorTimeline.G = 2;
-	TwoColorTimeline.B = 3;
-	TwoColorTimeline.A = 4;
-	TwoColorTimeline.R2 = 5;
-	TwoColorTimeline.G2 = 6;
-	TwoColorTimeline.B2 = 7;
 	spine.TwoColorTimeline = TwoColorTimeline;
 	var AttachmentTimeline = (function () {
 		function AttachmentTimeline(frameCount) {
@@ -652,41 +652,37 @@ var spine;
 			if (!(slotAttachment instanceof spine.VertexAttachment) || !slotAttachment.applyDeform(this.attachment))
 				return;
 			var verticesArray = slot.attachmentVertices;
+			if (verticesArray.length == 0)
+				alpha = 1;
 			var frameVertices = this.frameVertices;
 			var vertexCount = frameVertices[0].length;
-			var vertices = spine.Utils.setArraySize(verticesArray, vertexCount);
 			var frames = this.frames;
 			if (time < frames[0]) {
 				var vertexAttachment = slotAttachment;
 				switch (pose) {
 					case MixPose.setup:
-						var zeroVertices;
-						if (vertexAttachment.bones == null) {
-							zeroVertices = vertexAttachment.vertices;
-						}
-						else {
-							zeroVertices = zeros;
-							if (zeroVertices.length < vertexCount)
-								zeros = zeroVertices = spine.Utils.newFloatArray(vertexCount);
-						}
-						spine.Utils.arrayCopy(zeroVertices, 0, vertices, 0, vertexCount);
+						verticesArray.length = 0;
 						return;
 					case MixPose.current:
-						if (alpha == 1)
+						if (alpha == 1) {
+							verticesArray.length = 0;
 							break;
+						}
+						var vertices_1 = spine.Utils.setArraySize(verticesArray, vertexCount);
 						if (vertexAttachment.bones == null) {
 							var setupVertices = vertexAttachment.vertices;
 							for (var i = 0; i < vertexCount; i++)
-								vertices[i] += (setupVertices[i] - vertices[i]) * alpha;
+								vertices_1[i] += (setupVertices[i] - vertices_1[i]) * alpha;
 						}
 						else {
 							alpha = 1 - alpha;
 							for (var i = 0; i < vertexCount; i++)
-								vertices[i] *= alpha;
+								vertices_1[i] *= alpha;
 						}
 				}
 				return;
 			}
+			var vertices = spine.Utils.setArraySize(verticesArray, vertexCount);
 			if (time >= frames[frames.length - 1]) {
 				var lastVertices = frameVertices[frames.length - 1];
 				if (alpha == 1) {
@@ -897,14 +893,14 @@ var spine;
 					constraint.bendDirection = frames[frame + IkConstraintTimeline.PREV_BEND_DIRECTION];
 			}
 		};
+		IkConstraintTimeline.ENTRIES = 3;
+		IkConstraintTimeline.PREV_TIME = -3;
+		IkConstraintTimeline.PREV_MIX = -2;
+		IkConstraintTimeline.PREV_BEND_DIRECTION = -1;
+		IkConstraintTimeline.MIX = 1;
+		IkConstraintTimeline.BEND_DIRECTION = 2;
 		return IkConstraintTimeline;
 	}(CurveTimeline));
-	IkConstraintTimeline.ENTRIES = 3;
-	IkConstraintTimeline.PREV_TIME = -3;
-	IkConstraintTimeline.PREV_MIX = -2;
-	IkConstraintTimeline.PREV_BEND_DIRECTION = -1;
-	IkConstraintTimeline.MIX = 1;
-	IkConstraintTimeline.BEND_DIRECTION = 2;
 	spine.IkConstraintTimeline = IkConstraintTimeline;
 	var TransformConstraintTimeline = (function (_super) {
 		__extends(TransformConstraintTimeline, _super);
@@ -979,18 +975,18 @@ var spine;
 				constraint.shearMix += (shear - constraint.shearMix) * alpha;
 			}
 		};
+		TransformConstraintTimeline.ENTRIES = 5;
+		TransformConstraintTimeline.PREV_TIME = -5;
+		TransformConstraintTimeline.PREV_ROTATE = -4;
+		TransformConstraintTimeline.PREV_TRANSLATE = -3;
+		TransformConstraintTimeline.PREV_SCALE = -2;
+		TransformConstraintTimeline.PREV_SHEAR = -1;
+		TransformConstraintTimeline.ROTATE = 1;
+		TransformConstraintTimeline.TRANSLATE = 2;
+		TransformConstraintTimeline.SCALE = 3;
+		TransformConstraintTimeline.SHEAR = 4;
 		return TransformConstraintTimeline;
 	}(CurveTimeline));
-	TransformConstraintTimeline.ENTRIES = 5;
-	TransformConstraintTimeline.PREV_TIME = -5;
-	TransformConstraintTimeline.PREV_ROTATE = -4;
-	TransformConstraintTimeline.PREV_TRANSLATE = -3;
-	TransformConstraintTimeline.PREV_SCALE = -2;
-	TransformConstraintTimeline.PREV_SHEAR = -1;
-	TransformConstraintTimeline.ROTATE = 1;
-	TransformConstraintTimeline.TRANSLATE = 2;
-	TransformConstraintTimeline.SCALE = 3;
-	TransformConstraintTimeline.SHEAR = 4;
 	spine.TransformConstraintTimeline = TransformConstraintTimeline;
 	var PathConstraintPositionTimeline = (function (_super) {
 		__extends(PathConstraintPositionTimeline, _super);
@@ -1035,12 +1031,12 @@ var spine;
 			else
 				constraint.position += (position - constraint.position) * alpha;
 		};
+		PathConstraintPositionTimeline.ENTRIES = 2;
+		PathConstraintPositionTimeline.PREV_TIME = -2;
+		PathConstraintPositionTimeline.PREV_VALUE = -1;
+		PathConstraintPositionTimeline.VALUE = 1;
 		return PathConstraintPositionTimeline;
 	}(CurveTimeline));
-	PathConstraintPositionTimeline.ENTRIES = 2;
-	PathConstraintPositionTimeline.PREV_TIME = -2;
-	PathConstraintPositionTimeline.PREV_VALUE = -1;
-	PathConstraintPositionTimeline.VALUE = 1;
 	spine.PathConstraintPositionTimeline = PathConstraintPositionTimeline;
 	var PathConstraintSpacingTimeline = (function (_super) {
 		__extends(PathConstraintSpacingTimeline, _super);
@@ -1135,14 +1131,14 @@ var spine;
 				constraint.translateMix += (translate - constraint.translateMix) * alpha;
 			}
 		};
+		PathConstraintMixTimeline.ENTRIES = 3;
+		PathConstraintMixTimeline.PREV_TIME = -3;
+		PathConstraintMixTimeline.PREV_ROTATE = -2;
+		PathConstraintMixTimeline.PREV_TRANSLATE = -1;
+		PathConstraintMixTimeline.ROTATE = 1;
+		PathConstraintMixTimeline.TRANSLATE = 2;
 		return PathConstraintMixTimeline;
 	}(CurveTimeline));
-	PathConstraintMixTimeline.ENTRIES = 3;
-	PathConstraintMixTimeline.PREV_TIME = -3;
-	PathConstraintMixTimeline.PREV_ROTATE = -2;
-	PathConstraintMixTimeline.PREV_TRANSLATE = -1;
-	PathConstraintMixTimeline.ROTATE = 1;
-	PathConstraintMixTimeline.TRANSLATE = 2;
 	spine.PathConstraintMixTimeline = PathConstraintMixTimeline;
 })(spine || (spine = {}));
 var spine;
@@ -1215,16 +1211,16 @@ var spine;
 			if (from == null)
 				return true;
 			var finished = this.updateMixingFrom(from, delta);
+			from.animationLast = from.nextAnimationLast;
+			from.trackLast = from.nextTrackLast;
 			if (to.mixTime > 0 && (to.mixTime >= to.mixDuration || to.timeScale == 0)) {
-				if (from.totalAlpha == 0) {
+				if (from.totalAlpha == 0 || to.mixDuration == 0) {
 					to.mixingFrom = from.mixingFrom;
 					to.interruptAlpha = from.interruptAlpha;
 					this.queue.end(from);
 				}
 				return finished;
 			}
-			from.animationLast = from.nextAnimationLast;
-			from.trackLast = from.nextTrackLast;
 			from.trackTime += delta * from.timeScale;
 			to.mixTime += delta * to.timeScale;
 			return false;
@@ -1267,8 +1263,10 @@ var spine;
 						if (timeline instanceof spine.RotateTimeline) {
 							this.applyRotateTimeline(timeline, skeleton, animationTime, mix, pose, timelinesRotation, ii << 1, firstFrame);
 						}
-						else
+						else {
+							spine.Utils.webkit602BugfixHelper(mix, pose);
 							timeline.apply(skeleton, animationLast, animationTime, events, mix, pose, spine.MixDirection["in"]);
+						}
 					}
 				}
 				this.queueEvents(current, animationTime);
@@ -1284,8 +1282,10 @@ var spine;
 			if (from.mixingFrom != null)
 				this.applyMixingFrom(from, skeleton, currentPose);
 			var mix = 0;
-			if (to.mixDuration == 0)
+			if (to.mixDuration == 0) {
 				mix = 1;
+				currentPose = spine.MixPose.setup;
+			}
 			else {
 				mix = to.mixTime / to.mixDuration;
 				if (mix > 1)
@@ -1335,6 +1335,7 @@ var spine;
 				if (timeline instanceof spine.RotateTimeline)
 					this.applyRotateTimeline(timeline, skeleton, animationTime, alpha, pose, timelinesRotation, i << 1, firstFrame);
 				else {
+					spine.Utils.webkit602BugfixHelper(alpha, pose);
 					timeline.apply(skeleton, animationLast, animationTime, events, alpha, pose, spine.MixDirection.out);
 				}
 			}
@@ -1418,10 +1419,13 @@ var spine;
 					continue;
 				this.queue.event(entry, event_1);
 			}
-			if (entry.loop ? (trackLastWrapped > entry.trackTime % duration)
-				: (animationTime >= animationEnd && entry.animationLast < animationEnd)) {
+			var complete = false;
+			if (entry.loop)
+				complete = duration == 0 || trackLastWrapped > entry.trackTime % duration;
+			else
+				complete = animationTime >= animationEnd && entry.animationLast < animationEnd;
+			if (complete)
 				this.queue.complete(entry);
-			}
 			for (; i < n; i++) {
 				var event_2 = events[i];
 				if (event_2.time < animationStart)
@@ -1523,8 +1527,13 @@ var spine;
 				last.next = entry;
 				if (delay <= 0) {
 					var duration = last.animationEnd - last.animationStart;
-					if (duration != 0)
-						delay += duration * (1 + ((last.trackTime / duration) | 0)) - this.data.getMix(last.animation, animation);
+					if (duration != 0) {
+						if (last.loop)
+							delay += duration * (1 + ((last.trackTime / duration) | 0));
+						else
+							delay += duration;
+						delay -= this.data.getMix(last.animation, animation);
+					}
 					else
 						delay = 0;
 				}
@@ -1628,13 +1637,13 @@ var spine;
 		AnimationState.prototype.clearListenerNotifications = function () {
 			this.queue.clear();
 		};
+		AnimationState.emptyAnimation = new spine.Animation("<empty>", [], 0);
+		AnimationState.SUBSEQUENT = 0;
+		AnimationState.FIRST = 1;
+		AnimationState.DIP = 2;
+		AnimationState.DIP_MIX = 3;
 		return AnimationState;
 	}());
-	AnimationState.emptyAnimation = new spine.Animation("<empty>", [], 0);
-	AnimationState.SUBSEQUENT = 0;
-	AnimationState.FIRST = 1;
-	AnimationState.DIP = 2;
-	AnimationState.DIP_MIX = 3;
 	spine.AnimationState = AnimationState;
 	var TrackEntry = (function () {
 		function TrackEntry() {
@@ -1864,11 +1873,11 @@ var spine;
 				throw new Error("from cannot be null.");
 			if (to == null)
 				throw new Error("to cannot be null.");
-			var key = from.name + to.name;
+			var key = from.name + "." + to.name;
 			this.animationToMixTime[key] = duration;
 		};
 		AnimationStateData.prototype.getMix = function (from, to) {
-			var key = from.name + to.name;
+			var key = from.name + "." + to.name;
 			var value = this.animationToMixTime[key];
 			return value === undefined ? this.defaultMix : value;
 		};
@@ -1888,31 +1897,58 @@ var spine;
 			this.textureLoader = textureLoader;
 			this.pathPrefix = pathPrefix;
 		}
+		AssetManager.downloadText = function (url, success, error) {
+			var request = new XMLHttpRequest();
+			request.open("GET", url, true);
+			request.onload = function () {
+				if (request.status == 200) {
+					success(request.responseText);
+				}
+				else {
+					error(request.status, request.responseText);
+				}
+			};
+			request.onerror = function () {
+				error(request.status, request.responseText);
+			};
+			request.send();
+		};
+		AssetManager.downloadBinary = function (url, success, error) {
+			var request = new XMLHttpRequest();
+			request.open("GET", url, true);
+			request.responseType = "arraybuffer";
+			request.onload = function () {
+				if (request.status == 200) {
+					success(new Uint8Array(request.response));
+				}
+				else {
+					error(request.status, request.responseText);
+				}
+			};
+			request.onerror = function () {
+				error(request.status, request.responseText);
+			};
+			request.send();
+		};
 		AssetManager.prototype.loadText = function (path, success, error) {
 			var _this = this;
 			if (success === void 0) { success = null; }
 			if (error === void 0) { error = null; }
 			path = this.pathPrefix + path;
 			this.toLoad++;
-			var request = new XMLHttpRequest();
-			request.onreadystatechange = function () {
-				if (request.readyState == XMLHttpRequest.DONE) {
-					if (request.status >= 200 && request.status < 300) {
-						_this.assets[path] = request.responseText;
-						if (success)
-							success(path, request.responseText);
-					}
-					else {
-						_this.errors[path] = "Couldn't load text " + path + ": status " + request.status + ", " + request.responseText;
-						if (error)
-							error(path, "Couldn't load text " + path + ": status " + request.status + ", " + request.responseText);
-					}
-					_this.toLoad--;
-					_this.loaded++;
-				}
-			};
-			request.open("GET", path, true);
-			request.send();
+			AssetManager.downloadText(path, function (data) {
+				_this.assets[path] = data;
+				if (success)
+					success(path, data);
+				_this.toLoad--;
+				_this.loaded++;
+			}, function (state, responseText) {
+				_this.errors[path] = "Couldn't load text " + path + ": status " + status + ", " + responseText;
+				if (error)
+					error(path, "Couldn't load text " + path + ": status " + status + ", " + responseText);
+				_this.toLoad--;
+				_this.loaded++;
+			});
 		};
 		AssetManager.prototype.loadTexture = function (path, success, error) {
 			var _this = this;
@@ -1962,6 +1998,91 @@ var spine;
 					error(path, "Couldn't load image " + path);
 			};
 			img.src = data;
+		};
+		AssetManager.prototype.loadTextureAtlas = function (path, success, error) {
+			var _this = this;
+			if (success === void 0) { success = null; }
+			if (error === void 0) { error = null; }
+			var parent = path.lastIndexOf("/") >= 0 ? path.substring(0, path.lastIndexOf("/")) : "";
+			path = this.pathPrefix + path;
+			this.toLoad++;
+			AssetManager.downloadText(path, function (atlasData) {
+				var pagesLoaded = { count: 0 };
+				var atlasPages = new Array();
+				try {
+					var atlas = new spine.TextureAtlas(atlasData, function (path) {
+						atlasPages.push(parent + "/" + path);
+						var image = document.createElement("img");
+						image.width = 16;
+						image.height = 16;
+						return new spine.FakeTexture(image);
+					});
+				}
+				catch (e) {
+					var ex = e;
+					_this.errors[path] = "Couldn't load texture atlas " + path + ": " + ex.message;
+					if (error)
+						error(path, "Couldn't load texture atlas " + path + ": " + ex.message);
+					_this.toLoad--;
+					_this.loaded++;
+					return;
+				}
+				var _loop_1 = function (atlasPage) {
+					var pageLoadError = false;
+					_this.loadTexture(atlasPage, function (imagePath, image) {
+						pagesLoaded.count++;
+						if (pagesLoaded.count == atlasPages.length) {
+							if (!pageLoadError) {
+								try {
+									var atlas = new spine.TextureAtlas(atlasData, function (path) {
+										return _this.get(parent + "/" + path);
+									});
+									_this.assets[path] = atlas;
+									if (success)
+										success(path, atlas);
+									_this.toLoad--;
+									_this.loaded++;
+								}
+								catch (e) {
+									var ex = e;
+									_this.errors[path] = "Couldn't load texture atlas " + path + ": " + ex.message;
+									if (error)
+										error(path, "Couldn't load texture atlas " + path + ": " + ex.message);
+									_this.toLoad--;
+									_this.loaded++;
+								}
+							}
+							else {
+								_this.errors[path] = "Couldn't load texture atlas page " + imagePath + "} of atlas " + path;
+								if (error)
+									error(path, "Couldn't load texture atlas page " + imagePath + " of atlas " + path);
+								_this.toLoad--;
+								_this.loaded++;
+							}
+						}
+					}, function (imagePath, errorMessage) {
+						pageLoadError = true;
+						pagesLoaded.count++;
+						if (pagesLoaded.count == atlasPages.length) {
+							_this.errors[path] = "Couldn't load texture atlas page " + imagePath + "} of atlas " + path;
+							if (error)
+								error(path, "Couldn't load texture atlas page " + imagePath + " of atlas " + path);
+							_this.toLoad--;
+							_this.loaded++;
+						}
+					});
+				};
+				for (var _i = 0, atlasPages_1 = atlasPages; _i < atlasPages_1.length; _i++) {
+					var atlasPage = atlasPages_1[_i];
+					_loop_1(atlasPage);
+				}
+			}, function (state, responseText) {
+				_this.errors[path] = "Couldn't load texture atlas " + path + ": status " + status + ", " + responseText;
+				if (error)
+					error(path, "Couldn't load texture atlas " + path + ": status " + status + ", " + responseText);
+				_this.toLoad--;
+				_this.loaded++;
+			});
 		};
 		AssetManager.prototype.get = function (path) {
 			path = this.pathPrefix + path;
@@ -2629,13 +2750,18 @@ var spine;
 				for (var i = 0, n = spacesCount - 1; i < n;) {
 					var bone = bones[i];
 					var setupLength = bone.data.length;
-					if (setupLength == 0)
-						setupLength = 0.0000001;
-					var x = setupLength * bone.a, y = setupLength * bone.c;
-					var length_1 = Math.sqrt(x * x + y * y);
-					if (scale)
-						lengths[i] = length_1;
-					spaces[++i] = (lengthSpacing ? setupLength + spacing : spacing) * length_1 / setupLength;
+					if (setupLength < PathConstraint.epsilon) {
+						if (scale)
+							lengths[i] = 0;
+						spaces[++i] = 0;
+					}
+					else {
+						var x = setupLength * bone.a, y = setupLength * bone.c;
+						var length_1 = Math.sqrt(x * x + y * y);
+						if (scale)
+							lengths[i] = length_1;
+						spaces[++i] = (lengthSpacing ? setupLength + spacing : spacing) * length_1 / setupLength;
+					}
 				}
 			}
 			else {
@@ -2938,11 +3064,12 @@ var spine;
 		PathConstraint.prototype.getOrder = function () {
 			return this.data.order;
 		};
+		PathConstraint.NONE = -1;
+		PathConstraint.BEFORE = -2;
+		PathConstraint.AFTER = -3;
+		PathConstraint.epsilon = 0.00001;
 		return PathConstraint;
 	}());
-	PathConstraint.NONE = -1;
-	PathConstraint.BEFORE = -2;
-	PathConstraint.AFTER = -3;
 	spine.PathConstraint = PathConstraint;
 })(spine || (spine = {}));
 var spine;
@@ -4745,7 +4872,7 @@ var spine;
 					var eventData = skeletonData.findEvent(eventMap.name);
 					if (eventData == null)
 						throw new Error("Event not found: " + eventMap.name);
-					var event_5 = new spine.Event(eventMap.time, eventData);
+					var event_5 = new spine.Event(spine.Utils.toSinglePrecision(eventMap.time), eventData);
 					event_5.intValue = this.getValue(eventMap, "int", eventData.intValue);
 					event_5.floatValue = this.getValue(eventMap, "float", eventData.floatValue);
 					event_5.stringValue = this.getValue(eventMap, "string", eventData.stringValue);
@@ -5016,6 +5143,17 @@ var spine;
 		return TextureRegion;
 	}());
 	spine.TextureRegion = TextureRegion;
+	var FakeTexture = (function (_super) {
+		__extends(FakeTexture, _super);
+		function FakeTexture() {
+			return _super !== null && _super.apply(this, arguments) || this;
+		}
+		FakeTexture.prototype.setFilters = function (minFilter, magFilter) { };
+		FakeTexture.prototype.setWraps = function (uWrap, vWrap) { };
+		FakeTexture.prototype.dispose = function () { };
+		return FakeTexture;
+	}(spine.Texture));
+	spine.FakeTexture = FakeTexture;
 })(spine || (spine = {}));
 var spine;
 (function (spine) {
@@ -5047,12 +5185,8 @@ var spine;
 						reader.readTuple(tuple);
 					}
 					reader.readTuple(tuple);
-					var minMagFilterStrings = {
-						min: tuple[0],
-						mag: tuple[1]
-					};
-					page.minFilter = spine.Texture.filterFromString(minMagFilterStrings.min);
-					page.magFilter = spine.Texture.filterFromString(minMagFilterStrings.mag);
+					page.minFilter = spine.Texture.filterFromString(tuple[0]);
+					page.magFilter = spine.Texture.filterFromString(tuple[1]);
 					var direction = reader.readValue();
 					page.uWrap = spine.TextureWrap.ClampToEdge;
 					page.vWrap = spine.TextureWrap.ClampToEdge;
@@ -5062,7 +5196,7 @@ var spine;
 						page.vWrap = spine.TextureWrap.Repeat;
 					else if (direction == "xy")
 						page.uWrap = page.vWrap = spine.TextureWrap.Repeat;
-					page.texture = textureLoader(line, minMagFilterStrings);
+					page.texture = textureLoader(line);
 					page.texture.setFilters(page.minFilter, page.magFilter);
 					page.texture.setWraps(page.uWrap, page.vWrap);
 					page.width = page.texture.getImage().width;
@@ -5737,13 +5871,13 @@ var spine;
 				this.a = 1;
 			return this;
 		};
+		Color.WHITE = new Color(1, 1, 1, 1);
+		Color.RED = new Color(1, 0, 0, 1);
+		Color.GREEN = new Color(0, 1, 0, 1);
+		Color.BLUE = new Color(0, 0, 1, 1);
+		Color.MAGENTA = new Color(1, 0, 1, 1);
 		return Color;
 	}());
-	Color.WHITE = new Color(1, 1, 1, 1);
-	Color.RED = new Color(1, 0, 0, 1);
-	Color.GREEN = new Color(0, 1, 0, 1);
-	Color.BLUE = new Color(0, 0, 1, 1);
-	Color.MAGENTA = new Color(1, 0, 1, 1);
 	spine.Color = Color;
 	var MathUtils = (function () {
 		function MathUtils() {
@@ -5781,14 +5915,14 @@ var spine;
 				return min + Math.sqrt(u * d * (mode - min));
 			return max - Math.sqrt((1 - u) * d * (max - mode));
 		};
+		MathUtils.PI = 3.1415927;
+		MathUtils.PI2 = MathUtils.PI * 2;
+		MathUtils.radiansToDegrees = 180 / MathUtils.PI;
+		MathUtils.radDeg = MathUtils.radiansToDegrees;
+		MathUtils.degreesToRadians = MathUtils.PI / 180;
+		MathUtils.degRad = MathUtils.degreesToRadians;
 		return MathUtils;
 	}());
-	MathUtils.PI = 3.1415927;
-	MathUtils.PI2 = MathUtils.PI * 2;
-	MathUtils.radiansToDegrees = 180 / MathUtils.PI;
-	MathUtils.radDeg = MathUtils.radiansToDegrees;
-	MathUtils.degreesToRadians = MathUtils.PI / 180;
-	MathUtils.degRad = MathUtils.degreesToRadians;
 	spine.MathUtils = MathUtils;
 	var Interpolation = (function () {
 		function Interpolation() {
@@ -5883,9 +6017,14 @@ var spine;
 		Utils.toFloatArray = function (array) {
 			return Utils.SUPPORTS_TYPED_ARRAYS ? new Float32Array(array) : array;
 		};
+		Utils.toSinglePrecision = function (value) {
+			return Utils.SUPPORTS_TYPED_ARRAYS ? Math.fround(value) : value;
+		};
+		Utils.webkit602BugfixHelper = function (alpha, pose) {
+		};
+		Utils.SUPPORTS_TYPED_ARRAYS = typeof (Float32Array) !== "undefined";
 		return Utils;
 	}());
-	Utils.SUPPORTS_TYPED_ARRAYS = typeof (Float32Array) !== "undefined";
 	spine.Utils = Utils;
 	var DebugUtils = (function () {
 		function DebugUtils() {
@@ -6021,6 +6160,15 @@ var spine;
 	}());
 	spine.WindowedMean = WindowedMean;
 })(spine || (spine = {}));
+(function () {
+	if (!Math.fround) {
+		Math.fround = (function (array) {
+			return function (x) {
+				return array[0] = x, array[0];
+			};
+		})(new Float32Array(1));
+	}
+})();
 var spine;
 (function (spine) {
 	var Attachment = (function () {
@@ -6102,9 +6250,9 @@ var spine;
 		VertexAttachment.prototype.applyDeform = function (sourceAttachment) {
 			return this == sourceAttachment;
 		};
+		VertexAttachment.nextID = 0;
 		return VertexAttachment;
 	}(Attachment));
-	VertexAttachment.nextID = 0;
 	spine.VertexAttachment = VertexAttachment;
 })(spine || (spine = {}));
 var spine;
@@ -6342,48 +6490,48 @@ var spine;
 			worldVertices[offset] = offsetX * a + offsetY * b + x;
 			worldVertices[offset + 1] = offsetX * c + offsetY * d + y;
 		};
+		RegionAttachment.OX1 = 0;
+		RegionAttachment.OY1 = 1;
+		RegionAttachment.OX2 = 2;
+		RegionAttachment.OY2 = 3;
+		RegionAttachment.OX3 = 4;
+		RegionAttachment.OY3 = 5;
+		RegionAttachment.OX4 = 6;
+		RegionAttachment.OY4 = 7;
+		RegionAttachment.X1 = 0;
+		RegionAttachment.Y1 = 1;
+		RegionAttachment.C1R = 2;
+		RegionAttachment.C1G = 3;
+		RegionAttachment.C1B = 4;
+		RegionAttachment.C1A = 5;
+		RegionAttachment.U1 = 6;
+		RegionAttachment.V1 = 7;
+		RegionAttachment.X2 = 8;
+		RegionAttachment.Y2 = 9;
+		RegionAttachment.C2R = 10;
+		RegionAttachment.C2G = 11;
+		RegionAttachment.C2B = 12;
+		RegionAttachment.C2A = 13;
+		RegionAttachment.U2 = 14;
+		RegionAttachment.V2 = 15;
+		RegionAttachment.X3 = 16;
+		RegionAttachment.Y3 = 17;
+		RegionAttachment.C3R = 18;
+		RegionAttachment.C3G = 19;
+		RegionAttachment.C3B = 20;
+		RegionAttachment.C3A = 21;
+		RegionAttachment.U3 = 22;
+		RegionAttachment.V3 = 23;
+		RegionAttachment.X4 = 24;
+		RegionAttachment.Y4 = 25;
+		RegionAttachment.C4R = 26;
+		RegionAttachment.C4G = 27;
+		RegionAttachment.C4B = 28;
+		RegionAttachment.C4A = 29;
+		RegionAttachment.U4 = 30;
+		RegionAttachment.V4 = 31;
 		return RegionAttachment;
 	}(spine.Attachment));
-	RegionAttachment.OX1 = 0;
-	RegionAttachment.OY1 = 1;
-	RegionAttachment.OX2 = 2;
-	RegionAttachment.OY2 = 3;
-	RegionAttachment.OX3 = 4;
-	RegionAttachment.OY3 = 5;
-	RegionAttachment.OX4 = 6;
-	RegionAttachment.OY4 = 7;
-	RegionAttachment.X1 = 0;
-	RegionAttachment.Y1 = 1;
-	RegionAttachment.C1R = 2;
-	RegionAttachment.C1G = 3;
-	RegionAttachment.C1B = 4;
-	RegionAttachment.C1A = 5;
-	RegionAttachment.U1 = 6;
-	RegionAttachment.V1 = 7;
-	RegionAttachment.X2 = 8;
-	RegionAttachment.Y2 = 9;
-	RegionAttachment.C2R = 10;
-	RegionAttachment.C2G = 11;
-	RegionAttachment.C2B = 12;
-	RegionAttachment.C2A = 13;
-	RegionAttachment.U2 = 14;
-	RegionAttachment.V2 = 15;
-	RegionAttachment.X3 = 16;
-	RegionAttachment.Y3 = 17;
-	RegionAttachment.C3R = 18;
-	RegionAttachment.C3G = 19;
-	RegionAttachment.C3B = 20;
-	RegionAttachment.C3A = 21;
-	RegionAttachment.U3 = 22;
-	RegionAttachment.V3 = 23;
-	RegionAttachment.X4 = 24;
-	RegionAttachment.Y4 = 25;
-	RegionAttachment.C4R = 26;
-	RegionAttachment.C4G = 27;
-	RegionAttachment.C4B = 28;
-	RegionAttachment.C4A = 29;
-	RegionAttachment.U4 = 30;
-	RegionAttachment.V4 = 31;
 	spine.RegionAttachment = RegionAttachment;
 })(spine || (spine = {}));
 var spine;
@@ -6438,9 +6586,9 @@ var spine;
 		};
 		SwirlEffect.prototype.end = function () {
 		};
+		SwirlEffect.interpolation = new spine.PowOut(2);
 		return SwirlEffect;
 	}());
-	SwirlEffect.interpolation = new spine.PowOut(2);
 	spine.SwirlEffect = SwirlEffect;
 })(spine || (spine = {}));
 var spine;
@@ -6853,14 +7001,14 @@ var spine;
 				renderer.end();
 				renderer.camera.position.set(oldX, oldY, 0);
 			};
+			LoadingScreen.FADE_SECONDS = 1;
+			LoadingScreen.loaded = 0;
+			LoadingScreen.spinnerImg = null;
+			LoadingScreen.logoImg = null;
+			LoadingScreen.SPINNER_DATA = "data:image/png;base64,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";
+			LoadingScreen.SPINE_LOGO_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAtNJREFUaN7tmT2I1EAUxwN+oWgRT0HFKo0WCkJ6ObmAWFwZbCxsXGysLNJaiCyIoDaSwk4ETzvhmnBaCRbBWoQ01ho4PwotjP8cE337mMy8TLK757mBH3fLTWbe/PbN53neNniqZW8FvAVvQAqugwvgDDgO9niLRyTyJagM/ACPF6bsIl9ZRDac/Cc6tLn5xQdRQ496QlKPLxD5QCDxO9jtGM8QfYoIgUlgCipGCRJL5VvlyOdCU09iEXkCfLSIfCrs7Fab6nOsiafu06iDwES9w/uU1QnDC+ekkVS9vEaDsgVeB0d+z1VDtOGxRaYPboP3Gokb4GgXkZp4chZPJKgvZ3U0XkriK/TIt9YUDllFgTAjGwoaoHqfBhMI58yD4BQ4V6/aHYdfxToftvw9F2SiVroawU2/Cv5C4Thv0KB9S5nxlOd4STxjwUjzSdYlgrYijw2BsEfgsaFcM09lhiys94xXQQwugcvgJrgFLjrEE7WUiTuWCQzt/ZXN7FfqGwuGClyVy2xZAFmfDQvNtwFFSspMDGsD+UTWqu1KoVmVooFEJgKRXw0if85RpISEzwsjzeqWzkjkC4PIJ3MUmQgITAHlQwTFhnZhELkEntfZRwR+AvfAgXmJHOqU02XligWT8ppg67NXbdCXeq7afUQ6L8C2DalEZNt2YyQ94Qy8/ekjMpBMbfyl5iTjG7YAI8cNecROAb4kJmTjaXAF3AGvwQewOiuRxEtlSaT4j2h2lMsUueQEoMlIKpTvAmKhxPMtC876jEX6rE8l8TNx/KVbn6xlWU9NWcSDUsO4NGWpQOTZFpHPOooMXcswmW2XFk3ixb2v0Nq+XVKP00QNaffBLyWwBI/AkTlfMYZDXMf12kc6yjwEjoFdO/5me5oi/6tnyhlZX6OtgmX1c2Uh0k3khmbB2b9TRfpd/jfTUeRDJvHdYg5wE7kPXAN3wQ1weDvH+xufEgpi5qIl3QAAAABJRU5ErkJggg==";
 			return LoadingScreen;
 		}());
-		LoadingScreen.FADE_SECONDS = 1;
-		LoadingScreen.loaded = 0;
-		LoadingScreen.spinnerImg = null;
-		LoadingScreen.logoImg = null;
-		LoadingScreen.SPINNER_DATA = "data:image/png;base64,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";
-		LoadingScreen.SPINE_LOGO_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAAAZCAYAAACis3k0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAtNJREFUaN7tmT2I1EAUxwN+oWgRT0HFKo0WCkJ6ObmAWFwZbCxsXGysLNJaiCyIoDaSwk4ETzvhmnBaCRbBWoQ01ho4PwotjP8cE337mMy8TLK757mBH3fLTWbe/PbN53neNniqZW8FvAVvQAqugwvgDDgO9niLRyTyJagM/ACPF6bsIl9ZRDac/Cc6tLn5xQdRQ496QlKPLxD5QCDxO9jtGM8QfYoIgUlgCipGCRJL5VvlyOdCU09iEXkCfLSIfCrs7Fab6nOsiafu06iDwES9w/uU1QnDC+ekkVS9vEaDsgVeB0d+z1VDtOGxRaYPboP3Gokb4GgXkZp4chZPJKgvZ3U0XkriK/TIt9YUDllFgTAjGwoaoHqfBhMI58yD4BQ4V6/aHYdfxToftvw9F2SiVroawU2/Cv5C4Thv0KB9S5nxlOd4STxjwUjzSdYlgrYijw2BsEfgsaFcM09lhiys94xXQQwugcvgJrgFLjrEE7WUiTuWCQzt/ZXN7FfqGwuGClyVy2xZAFmfDQvNtwFFSspMDGsD+UTWqu1KoVmVooFEJgKRXw0if85RpISEzwsjzeqWzkjkC4PIJ3MUmQgITAHlQwTFhnZhELkEntfZRwR+AvfAgXmJHOqU02XligWT8ppg67NXbdCXeq7afUQ6L8C2DalEZNt2YyQ94Qy8/ekjMpBMbfyl5iTjG7YAI8cNecROAb4kJmTjaXAF3AGvwQewOiuRxEtlSaT4j2h2lMsUueQEoMlIKpTvAmKhxPMtC876jEX6rE8l8TNx/KVbn6xlWU9NWcSDUsO4NGWpQOTZFpHPOooMXcswmW2XFk3ixb2v0Nq+XVKP00QNaffBLyWwBI/AkTlfMYZDXMf12kc6yjwEjoFdO/5me5oi/6tnyhlZX6OtgmX1c2Uh0k3khmbB2b9TRfpd/jfTUeRDJvHdYg5wE7kPXAN3wQ1weDvH+xufEgpi5qIl3QAAAABJRU5ErkJggg==";
 		webgl.LoadingScreen = LoadingScreen;
 	})(webgl = spine.webgl || (spine.webgl = {}));
 })(spine || (spine = {}));
@@ -7155,12 +7303,12 @@ var spine;
 				if (Matrix4.zAxis === null)
 					Matrix4.zAxis = new webgl.Vector3();
 			};
+			Matrix4.xAxis = null;
+			Matrix4.yAxis = null;
+			Matrix4.zAxis = null;
+			Matrix4.tmpMatrix = new Matrix4();
 			return Matrix4;
 		}());
-		Matrix4.xAxis = null;
-		Matrix4.yAxis = null;
-		Matrix4.zAxis = null;
-		Matrix4.tmpMatrix = new Matrix4();
 		webgl.Matrix4 = Matrix4;
 	})(webgl = spine.webgl || (spine.webgl = {}));
 })(spine || (spine = {}));
@@ -7479,11 +7627,13 @@ var spine;
 				this.camera.update();
 				this.enableRenderer(this.batcher);
 			};
-			SceneRenderer.prototype.drawSkeleton = function (skeleton, premultipliedAlpha) {
+			SceneRenderer.prototype.drawSkeleton = function (skeleton, premultipliedAlpha, slotRangeStart, slotRangeEnd) {
 				if (premultipliedAlpha === void 0) { premultipliedAlpha = false; }
+				if (slotRangeStart === void 0) { slotRangeStart = -1; }
+				if (slotRangeEnd === void 0) { slotRangeEnd = -1; }
 				this.enableRenderer(this.batcher);
 				this.skeletonRenderer.premultipliedAlpha = premultipliedAlpha;
-				this.skeletonRenderer.draw(this.batcher, skeleton);
+				this.skeletonRenderer.draw(this.batcher, skeleton, slotRangeStart, slotRangeEnd);
 			};
 			SceneRenderer.prototype.drawSkeletonDebug = function (skeleton, premultipliedAlpha, ignoredBones) {
 				if (premultipliedAlpha === void 0) { premultipliedAlpha = false; }
@@ -7549,6 +7699,71 @@ var spine;
 				quad[i++] = color.a;
 				quad[i++] = 0;
 				quad[i++] = 0;
+				if (this.twoColorTint) {
+					quad[i++] = 0;
+					quad[i++] = 0;
+					quad[i++] = 0;
+					quad[i++] = 0;
+				}
+				this.batcher.draw(texture, quad, this.QUAD_TRIANGLES);
+			};
+			SceneRenderer.prototype.drawTextureUV = function (texture, x, y, width, height, u, v, u2, v2, color) {
+				if (color === void 0) { color = null; }
+				this.enableRenderer(this.batcher);
+				if (color === null)
+					color = this.WHITE;
+				var quad = this.QUAD;
+				var i = 0;
+				quad[i++] = x;
+				quad[i++] = y;
+				quad[i++] = color.r;
+				quad[i++] = color.g;
+				quad[i++] = color.b;
+				quad[i++] = color.a;
+				quad[i++] = u;
+				quad[i++] = v;
+				if (this.twoColorTint) {
+					quad[i++] = 0;
+					quad[i++] = 0;
+					quad[i++] = 0;
+					quad[i++] = 0;
+				}
+				quad[i++] = x + width;
+				quad[i++] = y;
+				quad[i++] = color.r;
+				quad[i++] = color.g;
+				quad[i++] = color.b;
+				quad[i++] = color.a;
+				quad[i++] = u2;
+				quad[i++] = v;
+				if (this.twoColorTint) {
+					quad[i++] = 0;
+					quad[i++] = 0;
+					quad[i++] = 0;
+					quad[i++] = 0;
+				}
+				quad[i++] = x + width;
+				quad[i++] = y + height;
+				quad[i++] = color.r;
+				quad[i++] = color.g;
+				quad[i++] = color.b;
+				quad[i++] = color.a;
+				quad[i++] = u2;
+				quad[i++] = v2;
+				if (this.twoColorTint) {
+					quad[i++] = 0;
+					quad[i++] = 0;
+					quad[i++] = 0;
+					quad[i++] = 0;
+				}
+				quad[i++] = x;
+				quad[i++] = y + height;
+				quad[i++] = color.r;
+				quad[i++] = color.g;
+				quad[i++] = color.b;
+				quad[i++] = color.a;
+				quad[i++] = u;
+				quad[i++] = v2;
 				if (this.twoColorTint) {
 					quad[i++] = 0;
 					quad[i++] = 0;
@@ -7873,6 +8088,8 @@ var spine;
 				this.tmp2x2 = new Float32Array(2 * 2);
 				this.tmp3x3 = new Float32Array(3 * 3);
 				this.tmp4x4 = new Float32Array(4 * 4);
+				this.vsSource = vertexShader;
+				this.fsSource = fragmentShader;
 				this.context = context instanceof webgl.ManagedWebGLRenderingContext ? context : new webgl.ManagedWebGLRenderingContext(context);
 				this.context.addRestorable(this);
 				this.compile();
@@ -7880,6 +8097,8 @@ var spine;
 			Shader.prototype.getProgram = function () { return this.program; };
 			Shader.prototype.getVertexShader = function () { return this.vertexShader; };
 			Shader.prototype.getFragmentShader = function () { return this.fragmentShader; };
+			Shader.prototype.getVertexShaderSource = function () { return this.vsSource; };
+			Shader.prototype.getFragmentSource = function () { return this.fsSource; };
 			Shader.prototype.compile = function () {
 				var gl = this.context.gl;
 				try {
@@ -7995,7 +8214,7 @@ var spine;
 			};
 			Shader.newTwoColoredTextured = function (context) {
 				var vs = "\n\t\t\t\tattribute vec4 " + Shader.POSITION + ";\n\t\t\t\tattribute vec4 " + Shader.COLOR + ";\n\t\t\t\tattribute vec4 " + Shader.COLOR2 + ";\n\t\t\t\tattribute vec2 " + Shader.TEXCOORDS + ";\n\t\t\t\tuniform mat4 " + Shader.MVP_MATRIX + ";\n\t\t\t\tvarying vec4 v_light;\n\t\t\t\tvarying vec4 v_dark;\n\t\t\t\tvarying vec2 v_texCoords;\n\n\t\t\t\tvoid main () {\n\t\t\t\t\tv_light = " + Shader.COLOR + ";\n\t\t\t\t\tv_dark = " + Shader.COLOR2 + ";\n\t\t\t\t\tv_texCoords = " + Shader.TEXCOORDS + ";\n\t\t\t\t\tgl_Position = " + Shader.MVP_MATRIX + " * " + Shader.POSITION + ";\n\t\t\t\t}\n\t\t\t";
-				var fs = "\n\t\t\t\t#ifdef GL_ES\n\t\t\t\t\t#define LOWP lowp\n\t\t\t\t\tprecision mediump float;\n\t\t\t\t#else\n\t\t\t\t\t#define LOWP\n\t\t\t\t#endif\n\t\t\t\tvarying LOWP vec4 v_light;\n\t\t\t\tvarying LOWP vec4 v_dark;\n\t\t\t\tvarying vec2 v_texCoords;\n\t\t\t\tuniform sampler2D u_texture;\n\n\t\t\t\tvoid main () {\n\t\t\t\t\tvec4 texColor = texture2D(u_texture, v_texCoords);\n\t\t\t\t\tfloat alpha = texColor.a * v_light.a;\n\t\t\t\t\tgl_FragColor.a = alpha;\n\t\t\t\t\tgl_FragColor.rgb = (1.0 - texColor.rgb) * v_dark.rgb * alpha + texColor.rgb * v_light.rgb;\n\t\t\t\t}\n\t\t\t";
+				var fs = "\n\t\t\t\t#ifdef GL_ES\n\t\t\t\t\t#define LOWP lowp\n\t\t\t\t\tprecision mediump float;\n\t\t\t\t#else\n\t\t\t\t\t#define LOWP\n\t\t\t\t#endif\n\t\t\t\tvarying LOWP vec4 v_light;\n\t\t\t\tvarying LOWP vec4 v_dark;\n\t\t\t\tvarying vec2 v_texCoords;\n\t\t\t\tuniform sampler2D u_texture;\n\n\t\t\t\tvoid main () {\n\t\t\t\t\tvec4 texColor = texture2D(u_texture, v_texCoords);\n\t\t\t\t\tgl_FragColor.a = texColor.a * v_light.a;\n\t\t\t\t\tgl_FragColor.rgb = ((texColor.a - 1.0) * v_dark.a + 1.0 - texColor.rgb) * v_dark.rgb + texColor.rgb * v_light.rgb;\n\t\t\t\t}\n\t\t\t";
 				return new Shader(context, vs, fs);
 			};
 			Shader.newColored = function (context) {
@@ -8003,14 +8222,14 @@ var spine;
 				var fs = "\n\t\t\t\t#ifdef GL_ES\n\t\t\t\t\t#define LOWP lowp\n\t\t\t\t\tprecision mediump float;\n\t\t\t\t#else\n\t\t\t\t\t#define LOWP\n\t\t\t\t#endif\n\t\t\t\tvarying LOWP vec4 v_color;\n\n\t\t\t\tvoid main () {\n\t\t\t\t\tgl_FragColor = v_color;\n\t\t\t\t}\n\t\t\t";
 				return new Shader(context, vs, fs);
 			};
+			Shader.MVP_MATRIX = "u_projTrans";
+			Shader.POSITION = "a_position";
+			Shader.COLOR = "a_color";
+			Shader.COLOR2 = "a_color2";
+			Shader.TEXCOORDS = "a_texCoords";
+			Shader.SAMPLER = "u_texture";
 			return Shader;
 		}());
-		Shader.MVP_MATRIX = "u_projTrans";
-		Shader.POSITION = "a_position";
-		Shader.COLOR = "a_color";
-		Shader.COLOR2 = "a_color2";
-		Shader.TEXCOORDS = "a_texCoords";
-		Shader.SAMPLER = "u_texture";
 		webgl.Shader = Shader;
 	})(webgl = spine.webgl || (spine.webgl = {}));
 })(spine || (spine = {}));
@@ -8523,10 +8742,10 @@ var spine;
 			};
 			SkeletonDebugRenderer.prototype.dispose = function () {
 			};
+			SkeletonDebugRenderer.LIGHT_GRAY = new spine.Color(192 / 255, 192 / 255, 192 / 255, 1);
+			SkeletonDebugRenderer.GREEN = new spine.Color(0, 1, 0, 1);
 			return SkeletonDebugRenderer;
 		}());
-		SkeletonDebugRenderer.LIGHT_GRAY = new spine.Color(192 / 255, 192 / 255, 192 / 255, 1);
-		SkeletonDebugRenderer.GREEN = new spine.Color(0, 1, 0, 1);
 		webgl.SkeletonDebugRenderer = SkeletonDebugRenderer;
 	})(webgl = spine.webgl || (spine.webgl = {}));
 })(spine || (spine = {}));
@@ -8563,7 +8782,9 @@ var spine;
 					this.vertexSize += 4;
 				this.vertices = spine.Utils.newFloatArray(this.vertexSize * 1024);
 			}
-			SkeletonRenderer.prototype.draw = function (batcher, skeleton) {
+			SkeletonRenderer.prototype.draw = function (batcher, skeleton, slotRangeStart, slotRangeEnd) {
+				if (slotRangeStart === void 0) { slotRangeStart = -1; }
+				if (slotRangeEnd === void 0) { slotRangeEnd = -1; }
 				var clipper = this.clipper;
 				var premultipliedAlpha = this.premultipliedAlpha;
 				var twoColorTint = this.twoColorTint;
@@ -8579,9 +8800,22 @@ var spine;
 				var attachmentColor = null;
 				var skeletonColor = skeleton.color;
 				var vertexSize = twoColorTint ? 12 : 8;
+				var inRange = false;
+				if (slotRangeStart == -1)
+					inRange = true;
 				for (var i = 0, n = drawOrder.length; i < n; i++) {
 					var clippedVertexSize = clipper.isClipping() ? 2 : vertexSize;
 					var slot = drawOrder[i];
+					if (slotRangeStart >= 0 && slotRangeStart == slot.data.index) {
+						inRange = true;
+					}
+					if (!inRange) {
+						clipper.clipEndWithSlot(slot);
+						continue;
+					}
+					if (slotRangeEnd >= 0 && slotRangeEnd == slot.data.index) {
+						inRange = false;
+					}
 					var attachment = slot.getAttachment();
 					var texture = null;
 					if (attachment instanceof spine.RegionAttachment) {
@@ -8630,9 +8864,18 @@ var spine;
 						}
 						var darkColor = this.tempColor2;
 						if (slot.darkColor == null)
-							darkColor.set(0, 0, 0, 1);
-						else
-							darkColor.setFromColor(slot.darkColor);
+							darkColor.set(0, 0, 0, 1.0);
+						else {
+							if (premultipliedAlpha) {
+								darkColor.r = slot.darkColor.r * finalColor.a;
+								darkColor.g = slot.darkColor.g * finalColor.a;
+								darkColor.b = slot.darkColor.b * finalColor.a;
+							}
+							else {
+								darkColor.setFromColor(slot.darkColor);
+							}
+							darkColor.a = premultipliedAlpha ? 1.0 : 0.0;
+						}
 						var slotBlendMode = slot.data.blendMode;
 						if (slotBlendMode != blendMode) {
 							blendMode = slotBlendMode;
@@ -8771,9 +9014,9 @@ var spine;
 				}
 				clipper.clipEnd();
 			};
+			SkeletonRenderer.QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
 			return SkeletonRenderer;
 		}());
-		SkeletonRenderer.QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
 		webgl.SkeletonRenderer = SkeletonRenderer;
 	})(webgl = spine.webgl || (spine.webgl = {}));
 })(spine || (spine = {}));
@@ -8925,17 +9168,17 @@ var spine;
 					default: throw new Error("Unknown blend mode: " + blendMode);
 				}
 			};
+			WebGLBlendModeConverter.ZERO = 0;
+			WebGLBlendModeConverter.ONE = 1;
+			WebGLBlendModeConverter.SRC_COLOR = 0x0300;
+			WebGLBlendModeConverter.ONE_MINUS_SRC_COLOR = 0x0301;
+			WebGLBlendModeConverter.SRC_ALPHA = 0x0302;
+			WebGLBlendModeConverter.ONE_MINUS_SRC_ALPHA = 0x0303;
+			WebGLBlendModeConverter.DST_ALPHA = 0x0304;
+			WebGLBlendModeConverter.ONE_MINUS_DST_ALPHA = 0x0305;
+			WebGLBlendModeConverter.DST_COLOR = 0x0306;
 			return WebGLBlendModeConverter;
 		}());
-		WebGLBlendModeConverter.ZERO = 0;
-		WebGLBlendModeConverter.ONE = 1;
-		WebGLBlendModeConverter.SRC_COLOR = 0x0300;
-		WebGLBlendModeConverter.ONE_MINUS_SRC_COLOR = 0x0301;
-		WebGLBlendModeConverter.SRC_ALPHA = 0x0302;
-		WebGLBlendModeConverter.ONE_MINUS_SRC_ALPHA = 0x0303;
-		WebGLBlendModeConverter.DST_ALPHA = 0x0304;
-		WebGLBlendModeConverter.ONE_MINUS_DST_ALPHA = 0x0305;
-		WebGLBlendModeConverter.DST_COLOR = 0x0306;
 		webgl.WebGLBlendModeConverter = WebGLBlendModeConverter;
 	})(webgl = spine.webgl || (spine.webgl = {}));
 })(spine || (spine = {}));

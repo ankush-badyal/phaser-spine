@@ -134,12 +134,11 @@ module PhaserSpine {
         private createSkeleton(key: string): spine.Skeleton {
             // Load the texture atlas using name.atlas and name.png from the AssetManager.
             // The function passed to TextureAtlas is used to resolve relative paths.
-            let atlas: spine.TextureAtlas = new spine.TextureAtlas(this.game.cache.getText('atlas_' + SpinePlugin.SPINE_NAMESPACE + '_' + key), (path, minMagFilterStrings) => {
+            let atlas: spine.TextureAtlas = new spine.TextureAtlas(this.game.cache.getText('atlas_' + SpinePlugin.SPINE_NAMESPACE + '_' + key), (path) => {
                 if (this.game.renderType === Phaser.CANVAS) {
                     return new PhaserSpine.Canvas.Texture(this.game.cache.getImage(path));
                 }
-                var useMipMaps = minMagFilterStrings.min.toLowerCase().indexOf('mip') !== -1;
-                return new PhaserSpine.WebGL.Texture(<WebGLRenderingContext>(<any>this.game.renderer).gl, this.game.cache.getImage(path), useMipMaps);
+                return new PhaserSpine.WebGL.Texture(<WebGLRenderingContext>(<any>this.game.renderer).gl, this.game.cache.getImage(path));
             });
 
             // Create a AtlasAttachmentLoader, which is specific to the WebGL backend.

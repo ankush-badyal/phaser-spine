@@ -373,9 +373,12 @@ declare module spine {
 		private toLoad;
 		private loaded;
 		constructor(textureLoader: (image: HTMLImageElement) => any, pathPrefix?: string);
+		private static downloadText(url, success, error);
+		private static downloadBinary(url, success, error);
 		loadText(path: string, success?: (path: string, text: string) => void, error?: (path: string, error: string) => void): void;
 		loadTexture(path: string, success?: (path: string, image: HTMLImageElement) => void, error?: (path: string, error: string) => void): void;
 		loadTextureData(path: string, data: string, success?: (path: string, image: HTMLImageElement) => void, error?: (path: string, error: string) => void): void;
+		loadTextureAtlas(path: string, success?: (path: string, atlas: TextureAtlas) => void, error?: (path: string, error: string) => void): void;
 		get(path: string): any;
 		remove(path: string): void;
 		removeAll(): void;
@@ -531,6 +534,7 @@ declare module spine {
 		static NONE: number;
 		static BEFORE: number;
 		static AFTER: number;
+		static epsilon: number;
 		data: PathConstraintData;
 		bones: Array<Bone>;
 		target: Slot;
@@ -823,16 +827,17 @@ declare module spine {
 		originalWidth: number;
 		originalHeight: number;
 	}
+	class FakeTexture extends spine.Texture {
+		setFilters(minFilter: spine.TextureFilter, magFilter: spine.TextureFilter): void;
+		setWraps(uWrap: spine.TextureWrap, vWrap: spine.TextureWrap): void;
+		dispose(): void;
+	}
 }
 declare module spine {
-	class MinMagFilterStringPair {
-		min: string;
-		mag: string;
-	}
 	class TextureAtlas implements Disposable {
 		pages: TextureAtlasPage[];
 		regions: TextureAtlasRegion[];
-		constructor(atlasText: string, textureLoader: (path: string, minMagFiltersString :MinMagFilterStringPair) => any);
+		constructor(atlasText: string, textureLoader: (path: string) => any);
 		private load(atlasText, textureLoader);
 		findRegion(name: string): TextureAtlasRegion;
 		dispose(): void;
@@ -991,6 +996,8 @@ declare module spine {
 		static newFloatArray(size: number): ArrayLike<number>;
 		static newShortArray(size: number): ArrayLike<number>;
 		static toFloatArray(array: Array<number>): number[] | Float32Array;
+		static toSinglePrecision(value: number): number;
+		static webkit602BugfixHelper(alpha: number, pose: MixPose): void;
 	}
 	class DebugUtils {
 		static logBones(skeleton: Skeleton): void;
@@ -1044,6 +1051,9 @@ declare module spine {
 		transform(position: Vector2, uv: Vector2, light: Color, dark: Color): void;
 		end(): void;
 	}
+}
+interface Math {
+	fround(n: number): number;
 }
 declare module spine {
 	abstract class Attachment {
@@ -1443,16 +1453,17 @@ declare module spine.webgl {
 		private shapes;
 		private shapesShader;
 		private activeRenderer;
-		private skeletonRenderer;
-		private skeletonDebugRenderer;
+		skeletonRenderer: SkeletonRenderer;
+		skeletonDebugRenderer: SkeletonDebugRenderer;
 		private QUAD;
 		private QUAD_TRIANGLES;
 		private WHITE;
 		constructor(canvas: HTMLCanvasElement, context: ManagedWebGLRenderingContext | WebGLRenderingContext, twoColorTint?: boolean);
 		begin(): void;
-		drawSkeleton(skeleton: Skeleton, premultipliedAlpha?: boolean): void;
+		drawSkeleton(skeleton: Skeleton, premultipliedAlpha?: boolean, slotRangeStart?: number, slotRangeEnd?: number): void;
 		drawSkeletonDebug(skeleton: Skeleton, premultipliedAlpha?: boolean, ignoredBones?: Array<string>): void;
 		drawTexture(texture: GLTexture, x: number, y: number, width: number, height: number, color?: Color): void;
+		drawTextureUV(texture: GLTexture, x: number, y: number, width: number, height: number, u: number, v: number, u2: number, v2: number, color?: Color): void;
 		drawTextureRotated(texture: GLTexture, x: number, y: number, width: number, height: number, pivotX: number, pivotY: number, angle: number, color?: Color, premultipliedAlpha?: boolean): void;
 		drawRegion(region: TextureAtlasRegion, x: number, y: number, width: number, height: number, color?: Color, premultipliedAlpha?: boolean): void;
 		line(x: number, y: number, x2: number, y2: number, color?: Color, color2?: Color): void;
@@ -1486,7 +1497,9 @@ declare module spine.webgl {
 		static SAMPLER: string;
 		private context;
 		private vs;
+		private vsSource;
 		private fs;
+		private fsSource;
 		private program;
 		private tmp2x2;
 		private tmp3x3;
@@ -1494,6 +1507,8 @@ declare module spine.webgl {
 		getProgram(): WebGLProgram;
 		getVertexShader(): string;
 		getFragmentShader(): string;
+		getVertexShaderSource(): string;
+		getFragmentSource(): string;
 		constructor(context: ManagedWebGLRenderingContext | WebGLRenderingContext, vertexShader: string, fragmentShader: string);
 		private compile();
 		private compileShader(type, source);
@@ -1604,7 +1619,7 @@ declare module spine.webgl {
 		private temp3;
 		private temp4;
 		constructor(context: ManagedWebGLRenderingContext, twoColorTint?: boolean);
-		draw(batcher: PolygonBatcher, skeleton: Skeleton): void;
+		draw(batcher: PolygonBatcher, skeleton: Skeleton, slotRangeStart?: number, slotRangeEnd?: number): void;
 	}
 }
 declare module spine.webgl {
