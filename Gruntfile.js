@@ -5,13 +5,13 @@ module.exports = function (grunt) {
         //Get some details from the package.json
         pkg: grunt.file.readJSON('package.json'),
         banner: '/*!\n' +
-        ' * <%= pkg.config.name %> - version <%= pkg.version %> \n' +
-        ' * <%= pkg.description %>\n' +
-        ' *\n' +
-        ' * <%= pkg.author %>\n' +
-        ' * Build at <%= grunt.template.today("dd-mm-yyyy") %>\n' +
-        ' * Released under MIT License \n' +
-        ' */\n',
+            ' * <%= pkg.config.name %> - version <%= pkg.version %> \n' +
+            ' * <%= pkg.description %>\n' +
+            ' *\n' +
+            ' * <%= pkg.author %>\n' +
+            ' * Build at <%= grunt.template.today("dd-mm-yyyy") %>\n' +
+            ' * Released under MIT License \n' +
+            ' */\n',
         usebanner: {
             dist: {
                 options: {
@@ -19,7 +19,7 @@ module.exports = function (grunt) {
                     banner: '<%= banner %>'
                 },
                 files: {
-                    src: [ 'build/*.js' ]
+                    src: ['build/*.js']
                 }
             }
         },
@@ -100,11 +100,11 @@ module.exports = function (grunt) {
 
     //dist Build
     grunt.registerTask('dist', [
-        'clean:dist',     //Clean the dist folder
-        'ts:dist',//Run typescript on the preprocessed files, for dist (client)
-        'uglify:dist',    //Minify everything
-        'concat',
-        'usebanner:dist'    //Minify everything
+        'clean:dist', //Clean the dist folder
+        'ts:dist', //Run typescript on the preprocessed files, for dist (client)
+        'uglify:dist', //Minify everything
+        // 'concat',
+        'usebanner:dist' //Minify everything
     ]);
 
     grunt.registerTask('dev', [
